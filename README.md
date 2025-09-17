@@ -6,11 +6,13 @@ Estimated effort: ~4–6 hours. You’ll have up to 7 calendar days to submit. Y
 
 # Data you’ll receive
 
+```
 data/
   raw/
     online_retail_II.xlsx             # e-commerce transactions (Excel; 2 years)
     ecb_fx_hist.csv                   # historical EUR FX (CSV)
     uk_bank_holidays.xlsx             # UK public holidays (EXCEL)
+```
 
 > The retail file contains columns like InvoiceNo, StockCode, Description, Quantity, InvoiceDate, UnitPrice, CustomerID, Country. Cancellations appear as negative quantities and/or InvoiceNo that starts with “C”. FX files are EUR-base reference rates (1 EUR = X units of currency). Work offline—do not fetch anything from the internet.
 
@@ -50,11 +52,13 @@ data/
 
 * Code in a small repo structure:
 
-README.md
-/src          # Python entrypoint(s) and helpers
-/sql          # Optional: views/materializations
-/data/raw     # provided inputs (keep file names as-is)
-/build        # created .duckdb and outputs (ok to .gitignore)
+  ```
+  README.md
+  /src          # Python entrypoint(s) and helpers
+  /sql          # Optional: views/materializations
+  /data/raw     # provided inputs (keep file names as-is)
+  /build        # created .duckdb and outputs (ok to .gitignore)
+  ```
 
 * Entrypoint: e.g. python src/run.py --rawdir data/raw --db build/retail.duckdb --rebuild
     * It should create all objects and final outputs with no manual steps.
