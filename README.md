@@ -2,16 +2,16 @@
 
 You’ll build a small but realistic data pipeline around retail transactions. The goal is to ingest raw files, model clean analytics tables, enrich with FX rates, and produce reliable daily metrics—then explain your design choices. Everything runs locally with DuckDB + Python.
 
-Estimated effort: ~4–6 hours. You’ll have up to 7 calendar days to submit. You are encouraged to us AI tools in this assignment, but be prepared to explain
+Estimated effort: ~4–6 hours. You’ll have up to 10 calendar days to submit. You are encouraged to us AI tools in this assignment, but be prepared to explain all the code that the models generate.
 
 # Data you’ll receive
 
 ```
 data/
   raw/
-    online_retail_II.xlsx             # e-commerce transactions (Excel; 2 years)
-    ecb_fx_hist.csv                   # historical EUR FX (CSV)
-    uk_bank_holidays.xlsx             # UK public holidays (EXCEL)
+    online_retail_II.xlsx             # e-commerce transactions (Excel; Use both tabs from the excel)
+    gbp.xml                           # historical EUR FX
+    ukbankholidays-jul19.xls          # UK public holidays
 ```
 
 > The retail file contains columns like InvoiceNo, StockCode, Description, Quantity, InvoiceDate, UnitPrice, CustomerID, Country. Cancellations appear as negative quantities and/or InvoiceNo that starts with “C”. FX files are EUR-base reference rates (1 EUR = X units of currency). Work offline—do not fetch anything from the internet.
