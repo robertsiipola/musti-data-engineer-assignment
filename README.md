@@ -76,3 +76,16 @@ data/
 * Python 3.13
 * No heavy frameworks needed (dbt optional, but not expected)
 * UV for package management
+
+# Local Setup
+
+Install the tooling below before running the project commands:
+
+1. Install `uv` (fast Python package manager from Astral):
+   * macOS/Linux: `curl -LsSf https://astral.sh/install.sh | sh`
+   * Windows (PowerShell): `powershell -ExecutionPolicy Bypass -c "irm https://astral.sh/install.ps1 | iex"`
+2. Install Git LFS so the large Excel workbook is pulled correctly:
+   * macOS (Homebrew): `brew install git-lfs`
+   * Windows: download the installer from https://git-lfs.com and run it
+   * Linux: follow the distribution instructions at https://git-lfs.com
+3. Run `git lfs install` once after installing Git LFS.
