@@ -102,3 +102,13 @@ Use UV to manage the virtual environment and project dependencies:
 3. Install or update dependencies from `pyproject.toml` and `uv.lock`:
    * `uv sync`
 4. If you add packages, run `uv add <package>` so the lockfile stays current.
+
+# Running the Pipeline
+
+The repository ships with a minimal CLI stub so applicants have a starting point:
+
+```
+python src/run.py --rawdir data/raw --db build/retail.duckdb --rebuild
+```
+
+Feel free to replace this script, introduce your own CLI framework, or refactor the orchestration modules as part of your submission.
