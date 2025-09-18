@@ -89,3 +89,16 @@ Install the tooling below before running the project commands:
    * Windows: download the installer from https://git-lfs.com and run it
    * Linux: follow the distribution instructions at https://git-lfs.com
 3. Run `git lfs install` once after installing Git LFS.
+
+# Python Environment
+
+Use UV to manage the virtual environment and project dependencies:
+
+1. Create the local virtualenv (writes to `.venv/` by default):
+   * `uv venv`
+2. Activate it when working locally:
+   * macOS/Linux: `source .venv/bin/activate`
+   * Windows (PowerShell): `.venv\Scripts\Activate.ps1`
+3. Install or update dependencies from `pyproject.toml` and `uv.lock`:
+   * `uv sync`
+4. If you add packages, run `uv add <package>` so the lockfile stays current.
