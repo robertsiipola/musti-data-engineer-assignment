@@ -9,7 +9,7 @@ Estimated effort: ~6 hours. You’ll have up to 10 calendar days to submit. You 
 ```
 data/
   raw/
-    online_retail_II.xlsx             # e-commerce transactions (Excel; Use both tabs from the excel)
+    online_retail_II.xlsx             # e-commerce transactions (Excel; Use both tabs from the Excel)
     gbp.xml                           # ECB XML with EUR-base rates including GBP
     ukbankholidays-jul19.xls          # UK public holidays
 ```
@@ -18,33 +18,19 @@ data/
 
 If you have trouble downloading the files you can find the Online Retail II dataset [here](https://archive.ics.uci.edu/dataset/502/online+retail+ii), the gbp.xml [here](https://www.ecb.europa.eu/stats/policy_and_exchange_rates/euro_reference_exchange_rates/html/eurofxref-graph-gbp.en.html) and the historical UK bank holidays [here](https://www.dmo.gov.uk/media/bfknrcrn/ukbankholidays-jul19.xls).
 
-## Metric definitions
-
-We'll help you by defining some core metrics:
-
-* orders = count (distinct invoice_no) where invoice _no NOT LIKE 'C%'
-* items = count(*) of line items (post-dedupe)
-* net_qty = sum(qty) (returns negative)
-* net_revenue_gbp = sum(qty * unit_price_gbp)
-* net_revenue_eur = sum(qty * unit_price_eur) with EUR computed via forward-filled daily ECB GBP rate.
-
-## FX join policy
-
-Build a daily calendar of FX rates (Online Retail II covers days from 2008 to 2011); ECB rates are missing on weekends/holidays; forward-fill the most recent available rate.
-
 # What to build
 
 ## 1. Ingest and standardize
 
 * Load each raw file into DuckDB (parsing via Python and then loading to DuckDB is acceptable).
-* Normalize data types (timestamps, numerics, text), trim whitespace, and de-duplicate using reasonable business keys.
+* Normalize data types (timestamps, numerics, text), trim whitespace, and de-duplicate using the business key defined below.
 * Create a reproducible local database file (e.g., build/retail.duckdb).
 
 ## 2. Dimensional modeling
 
 * dim_product (stock_code, description, first_seen, last_seen)
 * dim_customer (customer_id, country)
-* dim_calendar (date, is_weekend, is_uk_holiday, iso_week, month, year)
+* dim_calendar (date, is_weekend, is_uk_holiday, iso_week, iso_year, month, year)
 * fct_sales (invoice_no, invoice_ts, customer_id, stock_code, qty, unit_price_gbp, gross_amount_gbp)
     * Treat cancellations/returns correctly (net to zero when appropriate).
     * Ensure one row = one line item.
@@ -58,10 +44,52 @@ Build a daily calendar of FX rates (Online Retail II covers days from 2008 to 20
 
 ## 4. Produce an analytics table or view:
 
-* agg_store_day (date, country, orders, items, net_qty, net_revenue_gbp, net_revenue_eur)
+* agg_country_day (date, country, orders, items, net_qty, net_revenue_gbp, net_revenue_eur)
     * “Net” means after accounting for returns/cancellations.
     * Join to dim_calendar to include holiday/weekend flags.
+* Materialize as tables in `build/retail.duckdb`: dim_product, dim_customer, dim_calendar,
+  fct_sales, fct_sales_eur, agg_country_day.
 
+
+## Misc. guidance
+
+Here's some miscellaneous guidance to help you get started and minimize guesswork
+
+### Dimensional modeling
+
+* dim_customer (customer_id, country)
+  * If customer_id is null, map to an `UNKNOWN_CUSTOMER` surrogate row.
+
+### Ingest and standardize 
+
+* De-duplicate exact duplicate line items on:
+  (invoice_no, stock_code, invoice_ts, unit_price_gbp, qty, customer_id).
+
+### Metric definitions
+
+* orders = count (distinct invoice_no) where invoice_no NOT LIKE 'C%'
+* items = count(*) of line items (post-dedupe)
+* net_qty = sum(qty) (returns negative)
+* net_revenue_gbp = sum(qty * unit_price_gbp)
+* net_revenue_eur = sum(qty * unit_price_eur) with EUR computed via forward-filled daily ECB GBP rate.
+
+### FX join policy
+
+Build a daily calendar of FX rates (Online Retail II covers ~2009–2011). ECB rates are missing on weekends/holidays so forward-fill them; if invoice dates precede the first ECB rate, either back-fill from the first available rate or fail with a clear error.
+
+### Timezone & calendar
+
+* dim_calendar (date, is_weekend, is_uk_holiday, iso_week, iso_year, month, year)
+* Assume Europe/London timezone for invoice_ts and calendar flags.
+
+### Minimal acceptance checks
+
+The run should fail if any of the following are violated:
+1) Nulls in PKs or unresolved FKs.
+2) Negative unit prices or non-integer qty.
+3) Duplicates remain in fct_sales (expect one row per line item).
+4) FX sanity: gross_amount_eur ≈ gross_amount_gbp / rate_gbp_per_eur with a small tolerance (e.g., rel_diff ≤ 1e-6).
+5) dim_calendar fully spans the data; weekend and UK holiday flags present.
 
 # Deliverables
 
